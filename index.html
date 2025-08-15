@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>hangon</title>
+    <title>hangon: The Complete Productivity Suite</title>
     <style>
         * {
             margin: 0;
@@ -33,7 +33,18 @@
             width: 100%;
         }
         
-        .todo-section h2 {
+        .wide-container {
+            max-width: 800px;
+        }
+        
+        h1 {
+            color: white;
+            margin-bottom: 24px;
+            text-align: center;
+            font-weight: 900;
+            font-size: 1.5rem;
+        }
+        h2 {
             color: white;
             margin-bottom: 20px;
             text-align: center;
@@ -41,6 +52,7 @@
             font-size: 1.5rem;
         }
         
+        /* Todo List Styles */
         .add-task {
             display: flex;
             gap: 10px;
@@ -133,28 +145,35 @@
             background: rgba(231, 76, 60, 0.9);
         }
         
-        .calculator {
-            max-width: 400px;
+        .task-count {
+            color: rgba(255, 255, 255, 0.8);
+            text-align: center;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
         }
         
-        .calculator h2 {
-            color: white;
-            margin-bottom: 20px;
+        .empty-state {
             text-align: center;
-            font-weight: 300;
-            font-size: 1.5rem;
+            color: rgba(255, 255, 255, 0.6);
+            padding: 20px;
+            font-style: italic;
+        }
+        
+        /* Calculator Styles */
+        .calculator {
+            max-width: 400px;
         }
         
         .display {
             background: rgba(0, 0, 0, 0.7);
             color: #fff;
-            font-size: 2rem;
+            font-size: 1.5rem;
             font-weight: 300;
-            padding: 20px;
-            margin-bottom: 20px;
+            padding: 15px;
+            margin-bottom: 15px;
             border-radius: 15px;
             text-align: right;
-            min-height: 80px;
+            min-height: 60px;
             display: flex;
             align-items: center;
             justify-content: flex-end;
@@ -162,10 +181,43 @@
             overflow-wrap: break-word;
         }
         
+        .base-converter {
+            margin-bottom: 20px;
+        }
+        
+        .base-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .base-input {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .base-input label {
+            color: white;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .base-input input {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 8px;
+            color: white;
+            font-size: 0.9rem;
+            outline: none;
+        }
+        
         .buttons {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 10px;
+            gap: 8px;
         }
         
         button {
@@ -173,11 +225,11 @@
             color: white;
             border: none;
             border-radius: 12px;
-            font-size: 1rem;
+            font-size: 0.9rem;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s ease;
-            min-height: 50px;
+            min-height: 45px;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
@@ -202,30 +254,81 @@
         
         .function {
             background: rgba(52, 152, 219, 0.7);
-            font-size: 0.8rem;
+            font-size: 0.7rem;
         }
         
         .clear {
             background: rgba(231, 76, 60, 0.7);
         }
         
-        .task-count {
-            color: rgba(255, 255, 255, 0.8);
-            text-align: center;
-            font-size: 0.9rem;
+        /* Drawing Pad Styles */
+        .drawing-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
             margin-bottom: 15px;
+            justify-content: center;
         }
         
-        .empty-state {
-            text-align: center;
-            color: rgba(255, 255, 255, 0.6);
+        .drawing-controls button {
+            min-height: 40px;
+            padding: 8px 12px;
+            font-size: 0.8rem;
+        }
+        
+        .drawing-controls button.active {
+            background: rgba(46, 204, 113, 0.8);
+        }
+        
+        #drawingCanvas {
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            cursor: crosshair;
+            display: block;
+            margin: 0 auto;
+        }
+        
+        /* Diary Styles */
+        .diary-container {
+            max-width: 800px;
+        }
+        
+        .diary-textarea {
+            width: 100%;
+            min-height: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
             padding: 20px;
-            font-style: italic;
+            color: white;
+            font-size: 1rem;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            resize: vertical;
+            outline: none;
+        }
+        
+        .diary-textarea::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        .diary-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        .char-count {
+            font-weight: 500;
         }
     </style>
 </head>
 <body>
-    <h1>hangon</h1>
+    <h1>🙃 hangon 🙂</h1>
     <br>
     <br>
     <div class="container todo-section">
@@ -245,6 +348,27 @@
 
     <div class="container calculator">
         <h2>🧮 Scientific Calculator</h2>
+        
+        <div class="base-converter">
+            <div class="base-inputs">
+                <div class="base-input">
+                    <label>Decimal (DEC)</label>
+                    <input type="text" id="decInput" style="width:90%" placeholder="Enter decimal" oninput="convertFromBase('dec')">
+                </div>
+                <div class="base-input">
+                    <label>Hexadecimal (HEX)</label>
+                    <input type="text" id="hexInput" style="width:90%" placeholder="Enter hex" oninput="convertFromBase('hex')">
+                </div>
+                <div class="base-input">
+                    <label>Binary (BIN)</label>
+                    <input type="text" id="binInput" style="width:90%" placeholder="Enter binary" oninput="convertFromBase('bin')">
+                </div>
+                <div class="base-input">
+                    <label>Octal (OCT)</label>
+                    <input type="text" id="octInput" style="width:90%" placeholder="Enter octal" oninput="convertFromBase('oct')">
+                </div>
+            </div>
+        </div>
         
         <div class="display" id="display">0</div>
         <div class="buttons">
@@ -283,6 +407,45 @@
             <button onclick="appendToDisplay('0')">0</button>
             <button onclick="appendToDisplay('.')">.</button>
             <button class="equals" onclick="calculate()">=</button>
+        </div>
+    </div>
+
+    <div class="container wide-container">
+        <h2>🎨 Drawing Pad</h2>
+        
+        <div class="drawing-controls">
+            <button id="rectTool" class="active" onclick="setTool('rectangle')">Rectangle</button>
+            <button id="circleTool" onclick="setTool('circle')">Circle</button>
+            <button id="diamondTool" onclick="setTool('diamond')">Diamond</button>
+            <button id="arrowTool" onclick="setTool('arrow')">Arrow</button>
+            <button id="freeTool" onclick="setTool('free')">Free Draw</button>
+            <button onclick="clearCanvas()">Clear</button>
+            <button onclick="changeColor()">Color</button>
+        </div>
+        
+        <canvas id="drawingCanvas" width="750" height="400"></canvas>
+    </div>
+
+    <div class="container diary-container">
+        <h2>📖 Personal Diary</h2>
+        
+        <textarea 
+            id="diaryText" 
+            class="diary-textarea" 
+            placeholder="Write your thoughts here... Supports English, 中文, العربية, and all UTF-8 characters.
+
+你可以写中文...
+يمكنك الكتابة بالعربية...
+Vous pouvez écrire en français...
+Можете писать по-русски...
+
+记录你的想法、计划和感受..."
+            oninput="updateDiary()"
+        ></textarea>
+        
+        <div class="diary-info">
+            <span>Auto-saved</span>
+            <span class="char-count" id="charCount">0 / 50,000 characters</span>
         </div>
     </div>
 
@@ -401,6 +564,68 @@
         let currentInput = '0';
         let shouldResetDisplay = false;
 
+        // Base Conversion Functions
+        let conversionInProgress = false;
+
+        function convertFromBase(sourceBase) {
+            if (conversionInProgress) return;
+            conversionInProgress = true;
+
+            const inputs = {
+                dec: document.getElementById('decInput'),
+                hex: document.getElementById('hexInput'),
+                bin: document.getElementById('binInput'),
+                oct: document.getElementById('octInput')
+            };
+
+            const sourceValue = inputs[sourceBase].value.trim();
+            if (!sourceValue) {
+                // Clear other inputs if source is empty
+                Object.keys(inputs).forEach(base => {
+                    if (base !== sourceBase) {
+                        inputs[base].value = '';
+                    }
+                });
+                conversionInProgress = false;
+                return;
+            }
+
+            try {
+                let decimalValue;
+                
+                // Convert source to decimal
+                switch (sourceBase) {
+                    case 'dec':
+                        decimalValue = parseInt(sourceValue, 10);
+                        break;
+                    case 'hex':
+                        decimalValue = parseInt(sourceValue.replace(/[^0-9a-fA-F]/g, ''), 16);
+                        break;
+                    case 'bin':
+                        decimalValue = parseInt(sourceValue.replace(/[^01]/g, ''), 2);
+                        break;
+                    case 'oct':
+                        decimalValue = parseInt(sourceValue.replace(/[^0-7]/g, ''), 8);
+                        break;
+                }
+
+                if (isNaN(decimalValue) || decimalValue < 0) {
+                    throw new Error('Invalid input');
+                }
+
+                // Convert to other bases
+                if (sourceBase !== 'dec') inputs.dec.value = decimalValue.toString();
+                if (sourceBase !== 'hex') inputs.hex.value = decimalValue.toString(16).toUpperCase();
+                if (sourceBase !== 'bin') inputs.bin.value = decimalValue.toString(2);
+                if (sourceBase !== 'oct') inputs.oct.value = decimalValue.toString(8);
+
+            } catch (error) {
+                console.error('Base conversion error:', error);
+            }
+
+            conversionInProgress = false;
+        }
+
         function updateDisplay() {
             display.textContent = currentInput;
         }
@@ -490,10 +715,176 @@
             }
         }
 
+        // Drawing Pad Functionality
+        const canvas = document.getElementById('drawingCanvas');
+        const ctx = canvas.getContext('2d');
+        let currentTool = 'rectangle';
+        let isDrawing = false;
+        let startX, startY;
+        let currentColor = '#2c3e50';
+
+        function setTool(tool) {
+            currentTool = tool;
+            // Update active button
+            document.querySelectorAll('.drawing-controls button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tool + 'Tool').classList.add('active');
+            
+            // Change cursor based on tool
+            canvas.style.cursor = tool === 'free' ? 'brush' : 'crosshair';
+        }
+
+        function changeColor() {
+            const colors = ['#2c3e50', '#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c', '#34495e'];
+            const currentIndex = colors.indexOf(currentColor);
+            currentColor = colors[(currentIndex + 1) % colors.length];
+        }
+
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        canvas.addEventListener('mousedown', (e) => {
+            isDrawing = true;
+            const rect = canvas.getBoundingClientRect();
+            startX = e.clientX - rect.left;
+            startY = e.clientY - rect.top;
+            
+            if (currentTool === 'free') {
+                ctx.beginPath();
+                ctx.moveTo(startX, startY);
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (!isDrawing) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const currentX = e.clientX - rect.left;
+            const currentY = e.clientY - rect.top;
+            
+            if (currentTool === 'free') {
+                ctx.strokeStyle = currentColor;
+                ctx.lineWidth = 2;
+                ctx.lineCap = 'round';
+                ctx.lineTo(currentX, currentY);
+                ctx.stroke();
+            }
+        });
+
+        canvas.addEventListener('mouseup', (e) => {
+            if (!isDrawing) return;
+            isDrawing = false;
+            
+            const rect = canvas.getBoundingClientRect();
+            const endX = e.clientX - rect.left;
+            const endY = e.clientY - rect.top;
+            
+            ctx.strokeStyle = currentColor;
+            ctx.lineWidth = 2;
+            ctx.fillStyle = 'transparent';
+            
+            switch (currentTool) {
+                case 'rectangle':
+                    ctx.strokeRect(startX, startY, endX - startX, endY - startY);
+                    break;
+                    
+                case 'circle':
+                    const radius = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+                    ctx.beginPath();
+                    ctx.arc(startX, startY, radius, 0, 2 * Math.PI);
+                    ctx.stroke();
+                    break;
+                    
+                case 'diamond':
+                    const centerX = (startX + endX) / 2;
+                    const centerY = (startY + endY) / 2;
+                    const width = Math.abs(endX - startX) / 2;
+                    const height = Math.abs(endY - startY) / 2;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(centerX, startY);
+                    ctx.lineTo(endX, centerY);
+                    ctx.lineTo(centerX, endY);
+                    ctx.lineTo(startX, centerY);
+                    ctx.closePath();
+                    ctx.stroke();
+                    break;
+                    
+                case 'arrow':
+                    // Arrow shaft
+                    ctx.beginPath();
+                    ctx.moveTo(startX, startY);
+                    ctx.lineTo(endX, endY);
+                    ctx.stroke();
+                    
+                    // Arrow head
+                    const angle = Math.atan2(endY - startY, endX - startX);
+                    const headLength = 20;
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(endX, endY);
+                    ctx.lineTo(
+                        endX - headLength * Math.cos(angle - Math.PI / 6),
+                        endY - headLength * Math.sin(angle - Math.PI / 6)
+                    );
+                    ctx.moveTo(endX, endY);
+                    ctx.lineTo(
+                        endX - headLength * Math.cos(angle + Math.PI / 6),
+                        endY - headLength * Math.sin(angle + Math.PI / 6)
+                    );
+                    ctx.stroke();
+                    break;
+            }
+        });
+
+        // Diary Functionality
+        function loadDiary() {
+            try {
+                const savedDiary = localStorage.getItem('diaryContent');
+                if (savedDiary) {
+                    document.getElementById('diaryText').value = savedDiary;
+                    updateCharCount();
+                }
+            } catch (error) {
+                console.error('Error loading diary:', error);
+            }
+        }
+
+        function updateDiary() {
+            const diaryText = document.getElementById('diaryText').value;
+            
+            // Save to localStorage
+            try {
+                localStorage.setItem('diaryContent', diaryText);
+            } catch (error) {
+                console.error('Error saving diary:', error);
+            }
+            
+            updateCharCount();
+        }
+
+        function updateCharCount() {
+            const diaryText = document.getElementById('diaryText').value;
+            const charCount = diaryText.length;
+            const maxChars = 50000; // About 1000 lines of text
+            
+            document.getElementById('charCount').textContent = `${charCount.toLocaleString()} / ${maxChars.toLocaleString()} characters`;
+            
+            // Change color if approaching limit
+            const countElement = document.getElementById('charCount');
+            if (charCount > maxChars * 0.9) {
+                countElement.style.color = '#e74c3c';
+            } else if (charCount > maxChars * 0.7) {
+                countElement.style.color = '#f39c12';
+            } else {
+                countElement.style.color = 'rgba(255, 255, 255, 0.7)';
+            }
+        }
+
         // Keyboard support for calculator
         document.addEventListener('keydown', function(event) {
-            // Don't interfere with typing in the task input
-            if (event.target.id === 'taskInput') {
+            // Don't interfere with typing in inputs
+            if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
                 return;
             }
             
@@ -515,9 +906,10 @@
             }
         });
 
-        // Initialize the todo list display
+        // Initialize all components
         loadTasks();
         renderTasks();
+        loadDiary();
     </script>
 </body>
 </html>
