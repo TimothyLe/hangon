@@ -39,7 +39,7 @@
         
         h1 {
             color: white;
-            margin-bottom: 24px;
+            margin-bottom: 36px;
             text-align: center;
             font-weight: 900;
             font-size: 1.5rem;
@@ -268,6 +268,7 @@
             gap: 10px;
             margin-bottom: 15px;
             justify-content: center;
+            align-items: center;
         }
         
         .drawing-controls button {
@@ -280,13 +281,82 @@
             background: rgba(46, 204, 113, 0.8);
         }
         
-        #drawingCanvas {
+        .color-picker-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 15px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .color-preview {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            background-color: #2c3e50;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .color-preview:hover {
+            transform: scale(1.1);
+            border-color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .color-slider {
+            width: 150px;
+            height: 20px;
+            background: linear-gradient(to right, 
+                #ff0000 0%, #ffff00 17%, #00ff00 33%, 
+                #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);
+            border-radius: 10px;
+            position: relative;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .color-slider-thumb {
+            width: 22px;
+            height: 22px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: -1px;
+            left: 0px;
+            cursor: grab;
+            border: 2px solid #333;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            transition: box-shadow 0.2s ease;
+        }
+        
+        .color-slider-thumb:active {
+            cursor: grabbing;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+        
+        .canvas-container {
+            position: relative;
+            display: inline-block;
+            margin: 0 auto;
+        }
+        
+        #drawingCanvas, #previewCanvas {
             border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 10px;
             background: rgba(255, 255, 255, 0.9);
             cursor: crosshair;
             display: block;
-            margin: 0 auto;
+        }
+        
+        #previewCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 1;
         }
         
         /* Diary Styles */
@@ -420,10 +490,19 @@
             <button id="arrowTool" onclick="setTool('arrow')">Arrow</button>
             <button id="freeTool" onclick="setTool('free')">Free Draw</button>
             <button onclick="clearCanvas()">Clear</button>
-            <button onclick="changeColor()">Color</button>
+            
+            <div class="color-picker-container">
+                <div class="color-preview" id="colorPreview" onclick="toggleColorSlider()"></div>
+                <div class="color-slider" id="colorSlider" onclick="selectColor(event)">
+                    <div class="color-slider-thumb" id="colorThumb"></div>
+                </div>
+            </div>
         </div>
         
-        <canvas id="drawingCanvas" style="width:90%" height="400"></canvas>
+        <div class="canvas-container" style="width:150%">
+            <canvas id="drawingCanvas" width="750" height="400"></canvas>
+            <canvas id="previewCanvas" width="750" height="400"></canvas>
+        </div>
     </div>
 
     <div class="container diary-container">
@@ -718,10 +797,82 @@ Vous pouvez écrire en français...
         // Drawing Pad Functionality
         const canvas = document.getElementById('drawingCanvas');
         const ctx = canvas.getContext('2d');
+        const previewCanvas = document.getElementById('previewCanvas');
+        const previewCtx = previewCanvas.getContext('2d');
+        
         let currentTool = 'rectangle';
         let isDrawing = false;
         let startX, startY;
         let currentColor = '#2c3e50';
+        
+        // Color picker variables
+        let isDraggingSlider = false;
+        
+        // Initialize color picker
+        function initColorPicker() {
+            const colorPreview = document.getElementById('colorPreview');
+            const colorThumb = document.getElementById('colorThumb');
+            
+            colorPreview.style.backgroundColor = currentColor;
+            updateSliderPosition(0.2); // Start at a nice blue position
+        }
+        
+        function hslToHex(h, s, l) {
+            l /= 100;
+            const a = s * Math.min(l, 1 - l) / 100;
+            const f = n => {
+                const k = (n + h / 30) % 12;
+                const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+                return Math.round(255 * color).toString(16).padStart(2, '0');
+            };
+            return `#${f(0)}${f(8)}${f(4)}`;
+        }
+        
+        function updateSliderPosition(position) {
+            const slider = document.getElementById('colorSlider');
+            const thumb = document.getElementById('colorThumb');
+            const sliderWidth = slider.offsetWidth;
+            
+            // Clamp position between 0 and 1
+            position = Math.max(0, Math.min(1, position));
+            
+            // Update thumb position
+            const thumbPosition = position * (sliderWidth - 22);
+            thumb.style.left = `${thumbPosition}px`;
+            
+            // Calculate color based on position
+            const hue = position * 360;
+            currentColor = hslToHex(hue, 80, 50);
+            
+            // Update preview
+            document.getElementById('colorPreview').style.backgroundColor = currentColor;
+        }
+        
+        function selectColor(event) {
+            const slider = document.getElementById('colorSlider');
+            const rect = slider.getBoundingClientRect();
+            const position = (event.clientX - rect.left) / rect.width;
+            updateSliderPosition(position);
+        }
+        
+        // Slider dragging functionality
+        document.getElementById('colorThumb').addEventListener('mousedown', (e) => {
+            isDraggingSlider = true;
+            e.preventDefault();
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            if (!isDraggingSlider) return;
+            
+            const slider = document.getElementById('colorSlider');
+            const rect = slider.getBoundingClientRect();
+            const position = (e.clientX - rect.left) / rect.width;
+            updateSliderPosition(position);
+        });
+        
+        document.addEventListener('mouseup', () => {
+            isDraggingSlider = false;
+        });
 
         function setTool(tool) {
             currentTool = tool;
@@ -731,19 +882,81 @@ Vous pouvez écrire en français...
             
             // Change cursor based on tool
             canvas.style.cursor = tool === 'free' ? 'brush' : 'crosshair';
-        }
-
-        function changeColor() {
-            const colors = ['#2c3e50', '#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6', '#1abc9c', '#34495e'];
-            const currentIndex = colors.indexOf(currentColor);
-            currentColor = colors[(currentIndex + 1) % colors.length];
+            previewCanvas.style.cursor = tool === 'free' ? 'brush' : 'crosshair';
         }
 
         function clearCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+        }
+        
+        function clearPreview() {
+            previewCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+        }
+        
+        function drawPreview(startX, startY, currentX, currentY) {
+            clearPreview();
+            
+            previewCtx.strokeStyle = currentColor;
+            previewCtx.lineWidth = 2;
+            previewCtx.fillStyle = 'transparent';
+            previewCtx.setLineDash([5, 5]); // Dashed line for preview
+            
+            switch (currentTool) {
+                case 'rectangle':
+                    previewCtx.strokeRect(startX, startY, currentX - startX, currentY - startY);
+                    break;
+                    
+                case 'circle':
+                    const radius = Math.sqrt(Math.pow(currentX - startX, 2) + Math.pow(currentY - startY, 2));
+                    previewCtx.beginPath();
+                    previewCtx.arc(startX, startY, radius, 0, 2 * Math.PI);
+                    previewCtx.stroke();
+                    break;
+                    
+                case 'diamond':
+                    const centerX = (startX + currentX) / 2;
+                    const centerY = (startY + currentY) / 2;
+                    
+                    previewCtx.beginPath();
+                    previewCtx.moveTo(centerX, startY);
+                    previewCtx.lineTo(currentX, centerY);
+                    previewCtx.lineTo(centerX, currentY);
+                    previewCtx.lineTo(startX, centerY);
+                    previewCtx.closePath();
+                    previewCtx.stroke();
+                    break;
+                    
+                case 'arrow':
+                    // Arrow shaft
+                    previewCtx.beginPath();
+                    previewCtx.moveTo(startX, startY);
+                    previewCtx.lineTo(currentX, currentY);
+                    previewCtx.stroke();
+                    
+                    // Arrow head
+                    const angle = Math.atan2(currentY - startY, currentX - startX);
+                    const headLength = 20;
+                    
+                    previewCtx.beginPath();
+                    previewCtx.moveTo(currentX, currentY);
+                    previewCtx.lineTo(
+                        currentX - headLength * Math.cos(angle - Math.PI / 6),
+                        currentY - headLength * Math.sin(angle - Math.PI / 6)
+                    );
+                    previewCtx.moveTo(currentX, currentY);
+                    previewCtx.lineTo(
+                        currentX - headLength * Math.cos(angle + Math.PI / 6),
+                        currentY - headLength * Math.sin(angle + Math.PI / 6)
+                    );
+                    previewCtx.stroke();
+                    break;
+            }
         }
 
         canvas.addEventListener('mousedown', (e) => {
+            if (isDraggingSlider) return;
+            
             isDrawing = true;
             const rect = canvas.getBoundingClientRect();
             startX = e.clientX - rect.left;
@@ -756,7 +969,7 @@ Vous pouvez écrire en français...
         });
 
         canvas.addEventListener('mousemove', (e) => {
-            if (!isDrawing) return;
+            if (!isDrawing || isDraggingSlider) return;
             
             const rect = canvas.getBoundingClientRect();
             const currentX = e.clientX - rect.left;
@@ -766,74 +979,89 @@ Vous pouvez écrire en français...
                 ctx.strokeStyle = currentColor;
                 ctx.lineWidth = 2;
                 ctx.lineCap = 'round';
+                ctx.setLineDash([]); // Solid line for free drawing
                 ctx.lineTo(currentX, currentY);
                 ctx.stroke();
+            } else {
+                // Show preview for shape tools
+                drawPreview(startX, startY, currentX, currentY);
             }
         });
 
         canvas.addEventListener('mouseup', (e) => {
-            if (!isDrawing) return;
+            if (!isDrawing || isDraggingSlider) return;
             isDrawing = false;
             
             const rect = canvas.getBoundingClientRect();
             const endX = e.clientX - rect.left;
             const endY = e.clientY - rect.top;
             
-            ctx.strokeStyle = currentColor;
-            ctx.lineWidth = 2;
-            ctx.fillStyle = 'transparent';
+            // Clear preview and draw final shape
+            clearPreview();
             
-            switch (currentTool) {
-                case 'rectangle':
-                    ctx.strokeRect(startX, startY, endX - startX, endY - startY);
-                    break;
-                    
-                case 'circle':
-                    const radius = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
-                    ctx.beginPath();
-                    ctx.arc(startX, startY, radius, 0, 2 * Math.PI);
-                    ctx.stroke();
-                    break;
-                    
-                case 'diamond':
-                    const centerX = (startX + endX) / 2;
-                    const centerY = (startY + endY) / 2;
-                    const width = Math.abs(endX - startX) / 2;
-                    const height = Math.abs(endY - startY) / 2;
-                    
-                    ctx.beginPath();
-                    ctx.moveTo(centerX, startY);
-                    ctx.lineTo(endX, centerY);
-                    ctx.lineTo(centerX, endY);
-                    ctx.lineTo(startX, centerY);
-                    ctx.closePath();
-                    ctx.stroke();
-                    break;
-                    
-                case 'arrow':
-                    // Arrow shaft
-                    ctx.beginPath();
-                    ctx.moveTo(startX, startY);
-                    ctx.lineTo(endX, endY);
-                    ctx.stroke();
-                    
-                    // Arrow head
-                    const angle = Math.atan2(endY - startY, endX - startX);
-                    const headLength = 20;
-                    
-                    ctx.beginPath();
-                    ctx.moveTo(endX, endY);
-                    ctx.lineTo(
-                        endX - headLength * Math.cos(angle - Math.PI / 6),
-                        endY - headLength * Math.sin(angle - Math.PI / 6)
-                    );
-                    ctx.moveTo(endX, endY);
-                    ctx.lineTo(
-                        endX - headLength * Math.cos(angle + Math.PI / 6),
-                        endY - headLength * Math.sin(angle + Math.PI / 6)
-                    );
-                    ctx.stroke();
-                    break;
+            if (currentTool !== 'free') {
+                ctx.strokeStyle = currentColor;
+                ctx.lineWidth = 2;
+                ctx.fillStyle = 'transparent';
+                ctx.setLineDash([]); // Solid line for final drawing
+                
+                switch (currentTool) {
+                    case 'rectangle':
+                        ctx.strokeRect(startX, startY, endX - startX, endY - startY);
+                        break;
+                        
+                    case 'circle':
+                        const radius = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+                        ctx.beginPath();
+                        ctx.arc(startX, startY, radius, 0, 2 * Math.PI);
+                        ctx.stroke();
+                        break;
+                        
+                    case 'diamond':
+                        const centerX = (startX + endX) / 2;
+                        const centerY = (startY + endY) / 2;
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(centerX, startY);
+                        ctx.lineTo(endX, centerY);
+                        ctx.lineTo(centerX, endY);
+                        ctx.lineTo(startX, centerY);
+                        ctx.closePath();
+                        ctx.stroke();
+                        break;
+                        
+                    case 'arrow':
+                        // Arrow shaft
+                        ctx.beginPath();
+                        ctx.moveTo(startX, startY);
+                        ctx.lineTo(endX, endY);
+                        ctx.stroke();
+                        
+                        // Arrow head
+                        const angle = Math.atan2(endY - startY, endX - startX);
+                        const headLength = 20;
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(endX, endY);
+                        ctx.lineTo(
+                            endX - headLength * Math.cos(angle - Math.PI / 6),
+                            endY - headLength * Math.sin(angle - Math.PI / 6)
+                        );
+                        ctx.moveTo(endX, endY);
+                        ctx.lineTo(
+                            endX - headLength * Math.cos(angle + Math.PI / 6),
+                            endY - headLength * Math.sin(angle + Math.PI / 6)
+                        );
+                        ctx.stroke();
+                        break;
+                }
+            }
+        });
+        
+        // Prevent drawing when clicking outside canvas
+        canvas.addEventListener('mouseleave', () => {
+            if (isDrawing && currentTool !== 'free') {
+                clearPreview();
             }
         });
 
